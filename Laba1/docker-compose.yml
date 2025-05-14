@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  loadbalancer:
+    image: nginx:latest
+    container_name: loadbalancer
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx_config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html/frontend:ro
+    depends_on:
+      - core-service
+      - math-service
+    networks:
+      - app-network
+
+  core-service:
+    build:
+      context: .
+      dockerfile: core-service.Dockerfile
+    container_name: core-service
+    # expose: # Services are only accessible within Compose, no need to map ports to host
+    #   - "80"
+    networks:
+      - app-network
+
+  math-service:
+    build:
+      context: .
+      dockerfile: math-service.Dockerfile
+    container_name: math-service
+    # expose:
+    #   - "80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
